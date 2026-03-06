@@ -50,29 +50,6 @@ class GameView(arcade.Window):
             self.map_zoom -= 1
             changed = True
 
-        # движение карты
-        elif key == arcade.key.RIGHT:
-            self.map_ll[0] += self.press_delta
-            if self.map_ll[0] > 180:
-                self.map_ll[0] -= 360
-            changed = True
-
-        elif key == arcade.key.LEFT:
-            self.map_ll[0] -= self.press_delta
-            if self.map_ll[0] < -180:
-                self.map_ll[0] += 360
-            changed = True
-
-        elif key == arcade.key.UP:
-            if self.map_ll[1] + self.press_delta < 90:
-                self.map_ll[1] += self.press_delta
-            changed = True
-
-        elif key == arcade.key.DOWN:
-            if self.map_ll[1] - self.press_delta > -90:
-                self.map_ll[1] -= self.press_delta
-            changed = True
-
         if changed:
             self.update_map()
 
