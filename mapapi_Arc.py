@@ -4,59 +4,95 @@ import sys
 import os
 
 API_KEY_STATIC = 'f3a0fe3a-b07e-4840-a1da-06f18b2ddf13'
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
+WINDOW_WIDTH = 650
+WINDOW_HEIGHT = 500
 WINDOW_TITLE = "MAP"
 MAP_FILE = "map.png"
 
 
 class GameView(arcade.Window):
+    press_delta = 0.1
+
     def __init__(self, width, height, title, ll_spn=None, add_params=None):
         super().__init__(width, height, title)
-        self.ll_spn = ll_spn
+        self.map_zoom = 10
+        self.map_ll = ll_spn
         self.add_params = add_params
         self.background = None
 
     def setup(self):
-        self.get_image()
+        self.update_map()
 
     def on_draw(self):
         self.clear()
 
-        arcade.draw_texture_rect(
-            self.background,
-            arcade.LBWH(
-                (self.width - self.background.width) // 2,
-                (self.height - self.background.height) // 2,
-                self.background.width,
-                self.background.height
-            ),
+        if self.background:
+            arcade.draw_texture_rect(
+                self.background,
+                arcade.LBWH(
+                    (self.width - self.background.width) // 2,
+                    (self.height - self.background.height) // 2,
+                    self.background.width,
+                    self.background.height
+                ),
+            )
+
+    def on_key_press(self, key, modifiers):
+
+        changed = False
+
+        # масштаб
+        if key == arcade.key.PAGEUP and self.map_zoom < 17:
+            self.map_zoom += 1
+            changed = True
+
+        elif key == arcade.key.PAGEDOWN and self.map_zoom > 0:
+            self.map_zoom -= 1
+            changed = True
+
+        # движение карты
+        elif key == arcade.key.RIGHT:
+            self.map_ll[0] += self.press_delta
+            if self.map_ll[0] > 180:
+                self.map_ll[0] -= 360
+            changed = True
+
+        elif key == arcade.key.LEFT:
+            self.map_ll[0] -= self.press_delta
+            if self.map_ll[0] < -180:
+                self.map_ll[0] += 360
+            changed = True
+
+        elif key == arcade.key.UP:
+            if self.map_ll[1] + self.press_delta < 90:
+                self.map_ll[1] += self.press_delta
+            changed = True
+
+        elif key == arcade.key.DOWN:
+            if self.map_ll[1] - self.press_delta > -90:
+                self.map_ll[1] -= self.press_delta
+            changed = True
+
+        if changed:
+            self.update_map()
+
+    def update_map(self):
+
+        ll = f"{self.map_ll[0]},{self.map_ll[1]}"
+
+        map_request = (
+            "https://static-maps.yandex.ru/v1?"
+            f"apikey={API_KEY_STATIC}&ll={ll}&z={self.map_zoom}"
         )
 
-    def get_image(self):
-        if self.ll_spn:
-            map_request = (f"https://static-maps.yandex.ru/v1?apikey={API_KEY_STATIC}"
-                           f"&ll={self.ll_spn[0]},{self.ll_spn[1]}")
-        else:
-            map_request = f"https://static-maps.yandex.ru/v1?apikey={API_KEY_STATIC}&"
-
-        if self.add_params:
-            map_request += "&" + self.add_params
         response = requests.get(map_request)
 
         if not response:
-            print("Ошибка выполнения запроса:")
-            print(map_request)
-            print("Http статус:", response.status_code, "(", response.reason, ")")
+            print("Ошибка запроса:", response.status_code)
             sys.exit(1)
 
-        # Запишем полученное изображение в файл.
-        try:
-            with open(MAP_FILE, "wb") as file:
-                file.write(response.content)
-        except IOError as ex:
-            print("Ошибка записи временного файла:", ex)
-            sys.exit(2)
+        with open(MAP_FILE, "wb") as file:
+            file.write(response.content)
 
         self.background = arcade.load_texture(MAP_FILE)
 
