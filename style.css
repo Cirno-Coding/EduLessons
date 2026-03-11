@@ -1,0 +1,17 @@
+.container {
+    background-color: #FBF2E9;
+}
+
+textarea{
+    font-family: monospace;
+}
+
+.result-box{
+    background:#1e1e1e;
+    color:#00ff9c;
+    padding:15px;
+    border-radius:6px;
+    height:360px;
+    overflow:auto;
+    white-space:pre-wrap;
+}
