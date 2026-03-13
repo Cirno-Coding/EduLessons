@@ -1,5 +1,4 @@
-from flask import Flask
-
+from flask import Flask, url_for
 
 app = Flask(__name__)
 
@@ -24,6 +23,22 @@ def promotion():
         'Присоединяйся!'
     ]
     return '<br>'.join(promotion_list)
+
+
+@app.route('/image_mars')
+def image():
+    return f"""<!doctype html>
+                <html lang="ru">
+                  <head>
+                    <meta charset="utf-8">
+                    <title>Привет, Марс!</title>
+                  </head>
+                  <body>
+                    <h1>Жди нас, Марс!</h1>
+                    <img src="{url_for('static', filename='img/mars_1.gif')}" alt="здесь должна была быть картинка, но не нашлась">
+                    <p>Вот она какая, красная планета.</p>
+                  </body>
+                </html>"""
 
 
 if __name__ == '__main__':
