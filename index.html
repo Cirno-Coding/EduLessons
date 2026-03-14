@@ -11,26 +11,26 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container mt-4">
-        <h2 class="text-center mb-4">Каталог копирайтеров</h2>
-        <div class="row">
-            <!-- USERS -->
-             <div id="users" class="row"></div>
-
-            <!-- USER INFO -->
-             <div id="userInfo" class="mt-5"></div>
-
-            <!-- BUTTON -->
-             <div class="text-center mt-3">
-                <button id="showPostsBtn" class="btn btn-primary d-none">
-                    Show Posts
+    <div class="container mt-5 p-5">
+        <h2 class="text-center mb-4">Product List</h2>
+        <hr>
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <select id="sortType" class="form-select">
+                    <option value="numb">Сортировка по id</option>
+                    <option value="name">Сортировка по имени</option>
+                    <option value="price">Сортировка по цене</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button id="sortBtn" class="btn btn-primary">
+                    Сортировать
                 </button>
-             </div>
-
-             <!-- POSTS -->
-              <div id="posts" class="row mt-4"></div>
+            </div>
         </div>
-
+        <hr>
+        <div class="row g-4 justify-content-center" id="productList"></div>
+        </div>
     </div>
 
     <script src="index.js"></script>

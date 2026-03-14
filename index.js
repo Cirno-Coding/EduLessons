@@ -1,92 +1,67 @@
-const usersContainer = document.getElementById("users");
-const userInfo = document.getElementById("userInfo");
-const postsContainer = document.getElementById("posts");
-const showPostsBtn = document.getElementById("showPostsBtn");
+const fruits = [
+{ numb:1, name:"Apple", price:1.02 },
+{ numb:2, name:"Pear", price:1.52 },
+{ numb:3, name:"Banana", price:2.00 },
+{ numb:4, name:"Mango", price:5.60 },
+{ numb:5, name:"Orange", price:2.35 },
+{ numb:6, name:"Lime", price:3.90 },
+{ numb:7, name:"Apricot", price:4.10 },
+{ numb:8, name:"Avocado", price:5.90 },
+{ numb:9, name:"Papaya", price:7.00 },
+{ numb:10, name:"Raspberry", price:4.60 },
+{ numb:11, name:"Lemon", price:3.45 }
+];
 
-let currentUserId = null;
 
-loadUsers();
-
-function loadUsers(){
-	const xhr = new XMLHttpRequest();
-	xhr.open("GET","https://jsonplaceholder.typicode.com/users");
-	xhr.onload = function(){
-		const users = JSON.parse(xhr.responseText);
-		users.forEach(user => {
-			const col = document.createElement("div");
-			col.className="col-md-4 mb-4";
-			col.innerHTML = `
-			<div class="user-card">
-			<h5>${user.name}</h5>
-			<p>${user.email}</p>
+function renderProducts(arr) {
+	const container = document.getElementById("productList");
+	container.innerHTML = "";
+	arr.forEach((fruit, index) => {
+		const block = `
+			<div class="col-auto">
+				<div class="product-card text-center">
+					<div class="product-number">#${fruit.numb}</div>
+					<div class="product-name">
+						${fruit.name.toUpperCase()}
+					</div>
+					<div class="product-price">
+						${fruit.price} $
+					</div>
+				</div>
 			</div>
-			`;
-			col.onclick = () => loadUser(user.id);
-			usersContainer.appendChild(col);
-		});
-	};
-	xhr.send();
-}
-
-function loadUser(id){
-	currentUserId = id;
-	const xhr = new XMLHttpRequest();
-	xhr.open("GET","https://jsonplaceholder.typicode.com/users/"+id);
-	xhr.onload = function(){
-		const user = JSON.parse(xhr.responseText);
-		userInfo.innerHTML = `
-		<h3>User Info</h3>
-		<table class="table table-bordered">
-			<tr>
-				<th>Name</th>
-				<td>${user.name}</td>
-			</tr>
-			<tr>
-				<th>Username</th>
-				<td>${user.username}</td>
-			</tr>
-			<tr>
-				<th>Email</th>
-				<td>${user.email}</td>
-			</tr>
-			<tr>
-				<th>Phone</th>
-				<td>${user.phone}</td>
-			</tr>
-			<tr>
-				<th>Website</th>
-				<td>${user.website}</td>
-			</tr>
-			<tr>
-				<th>Company</th>
-				<td>${user.company.name}</td>
-			</tr>
-		</table>
 		`;
-		showPostsBtn.classList.remove("d-none");
-		postsContainer.innerHTML="";
-	};
-	xhr.send();
+		container.innerHTML += block;
+	});
 }
 
-showPostsBtn.addEventListener("click",loadPosts);
-function loadPosts(){
-	const xhr = new XMLHttpRequest();
-	xhr.open("GET","https://jsonplaceholder.typicode.com/posts?userId="+currentUserId);
-	xhr.onload = function(){
-		const posts = JSON.parse(xhr.responseText);
-		postsContainer.innerHTML="<h3 class='mb-4'>User's Posts</h3>";
-		posts.forEach(post => {
-			const col = document.createElement("div");
-			col.className="col-md-6";
-			col.innerHTML = `
-			<div class="post">
-			<h5>${post.title}</h5>
-			<p>${post.body}</p>
-			</div>
-			`;
-			postsContainer.appendChild(col);
-		});
-	};
-	xhr.send();
+
+function mysort(arr, cmp) {
+	for (let i = 0; i < arr.length - 1; i++) {
+		for (let j = i + 1; j < arr.length; j++) {
+			if (!cmp(arr[i], arr[j])) {
+				let temp = arr[i];
+				arr[i] = arr[j];
+				arr[j] = temp;
+			}
+		}
+	}
+	return arr;
 }
+
+
+document.getElementById("sortBtn").addEventListener("click", () => {
+	const type = document.getElementById("sortType").value;
+	if (type === "name") {
+		mysort(fruits, (a, b) => a.name < b.name);
+	}
+	if (type === "price") {
+		mysort(fruits, (a, b) => a.price < b.price);
+	}
+	if (type === "numb") {
+		mysort(fruits, (a, b) => a.numb < b.numb);
+	}
+	renderProducts(fruits);
+});
+
+
+renderProducts(fruits);
