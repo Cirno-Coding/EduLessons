@@ -21,3 +21,8 @@ h4 {
 p {
     font-size: 14pt;
 }
+
+h1.access {
+    background: url(/static/img/mission_small.png) no-repeat;
+    padding-left: 115pt;
+}
