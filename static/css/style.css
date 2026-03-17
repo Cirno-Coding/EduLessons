@@ -12,3 +12,12 @@ form.login_form {
     border-radius: 5px;
     padding: 10px;
 }
+
+h4 {
+    color: #cccccc;
+    padding: 20px;
+}
+
+p {
+    font-size: 14pt;
+}
