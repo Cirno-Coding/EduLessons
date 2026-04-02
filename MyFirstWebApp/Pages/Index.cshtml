@@ -1,0 +1,64 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <div class="card shadow mt-5">
+            <div class="card-body">
+
+                <h2 class="text-center mb-4">Регистрация на мероприятие</h2>
+
+                <!-- Форма -->
+                <form method="post">
+
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <input type="text" name="name" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Возраст</label>
+                        <input type="text" name="age" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Любимый предмет</label>
+                        <input type="text" name="subject" class="form-control" />
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            Зарегистрироваться
+                        </button>
+                    </div>
+
+                </form>
+
+                <!-- Ошибка -->
+                @if (Model.Error != null)
+                {
+                    <div class="alert alert-danger mt-3">
+                        @Model.Error
+                    </div>
+                }
+
+                <!-- Успех -->
+                @if (Model.Name != null && Model.Error == null)
+                {
+                    <div class="alert alert-success mt-3">
+                        <h5>Вы успешно зарегистрированы!</h5>
+                        <p><b>Имя:</b> @Model.Name</p>
+                        <p><b>Возраст:</b> @Model.Age</p>
+                        <p><b>Любимый предмет:</b> @Model.Subject</p>
+                    </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+</div>
