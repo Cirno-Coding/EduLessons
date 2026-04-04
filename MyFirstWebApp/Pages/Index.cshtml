@@ -13,7 +13,7 @@
                 <h2 class="text-center mb-4">Регистрация на мероприятие</h2>
 
                 <!-- Форма -->
-                <form method="post">
+                <form method="post" asp-page-handler="Add">
 
                     <div class="mb-3">
                         <label class="form-label">Имя</label>
@@ -59,6 +59,46 @@
 
             </div>
         </div>
+
+        @if (IndexModel.Participants.Count > 0)
+        {
+            <div class="mt-5">
+                <h3 class="text-center">Список участников</h3>
+
+                <table class="table table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Имя</th>
+                            <th>Возраст</th>
+                            <th>Предмет</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < IndexModel.Participants.Count; i++)
+                        {
+                            var p = IndexModel.Participants[i];
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@p.Name</td>
+                                <td>@p.Age</td>
+                                <td>@p.Subject</td>
+                                @* Домашка *@
+                                <td>
+                                    <form method="post" asp-page-handler="Delete">
+                                        <input type="hidden" name="deleteIndex" value="@i" />
+                                        <button class="btn btn-danger btn-sm">
+                                            Удалить
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
 
     </div>
 </div>
