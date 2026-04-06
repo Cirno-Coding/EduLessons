@@ -17,17 +17,28 @@
 
                     <div class="mb-3">
                         <label class="form-label">Имя</label>
-                        <input type="text" name="name" class="form-control" />
+                        <input asp-for="Name" class="form-control" />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Возраст</label>
-                        <input type="text" name="age" class="form-control" />
+                        <input asp-for="Age" class="form-control" />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Любимый предмет</label>
-                        <input type="text" name="subject" class="form-control" />
+                        <input asp-for="Subject" class="form-control" />
+                    </div>
+                    
+                    @* Домашка *@
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Класс</label>
+                        <input asp-for="ClassName" class="form-control" />
                     </div>
 
                     <div class="d-grid">
@@ -54,6 +65,9 @@
                         <p><b>Имя:</b> @Model.Name</p>
                         <p><b>Возраст:</b> @Model.Age</p>
                         <p><b>Любимый предмет:</b> @Model.Subject</p>
+                        @* Домашка *@
+                        <p><b>Email:</b> @Model.Email</p>
+                        <p><b>Класс:</b> @Model.ClassName</p>
                     </div>
                 }
 
@@ -72,6 +86,9 @@
                             <th>Имя</th>
                             <th>Возраст</th>
                             <th>Предмет</th>
+                            @* Домашка *@
+                            <th>Email</th>
+                            <th>Класс</th>
                             <th>Действие</th>
                         </tr>
                     </thead>
@@ -85,6 +102,8 @@
                                 <td>@p.Age</td>
                                 <td>@p.Subject</td>
                                 @* Домашка *@
+                                <td>@p.Email</td>
+                                <td>@p.ClassName</td>
                                 <td>
                                     <form method="post" asp-page-handler="Delete">
                                         <input type="hidden" name="deleteIndex" value="@i" />
