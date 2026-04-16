@@ -26,7 +26,20 @@ namespace SchoolHub.Pages
 
         public List<Project> Projects { get; set; } = new();
 
+        public int TotalProjectsCount { get; set; }
         public string Message { get; set; } = string.Empty;
+        public string CurrentUserName { get; set; } = string.Empty;
+        public List<string> Categories { get; } = new()
+        {
+            "Программирование",
+            "Робототехника",
+            "Игры",
+            "Сайт",
+            "Мобильное приложение",
+            "Наука",
+            "Дизайн",
+            "Другое"
+        };
 
         public IActionResult OnGet()
         {
@@ -37,7 +50,7 @@ namespace SchoolHub.Pages
                 return RedirectToPage("/Index");
             }
 
-            LoadProjects();
+            LoadProjects(userId.Value);
             return Page();
         }
 
@@ -55,7 +68,7 @@ namespace SchoolHub.Pages
                 string.IsNullOrWhiteSpace(Category))
             {
                 Message = "Заполните все поля.";
-                LoadProjects();
+                LoadProjects(userId.Value);
                 return Page();
             }
 
@@ -64,6 +77,7 @@ namespace SchoolHub.Pages
                 Title = Title,
                 Description = Description,
                 Category = Category,
+                CreatedAt = DateTime.Now,
                 AuthorId = userId.Value
             };
 
@@ -73,9 +87,22 @@ namespace SchoolHub.Pages
             return RedirectToPage();
         }
 
-        private void LoadProjects()
+        private void LoadProjects(int userId)
         {
-            Projects = _context.Projects.Include(p => p.Author).OrderByDescending(p => p.Id).ToList();
+            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+
+            if (user != null)
+            {
+                CurrentUserName = user.Name;
+            }
+
+            Projects = _context.Projects
+                .Include(p => p.Author)
+                .Where(p => p.AuthorId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.Id)
+                .ToList();
+            TotalProjectsCount = Projects.Count;
         }
     }
 }
