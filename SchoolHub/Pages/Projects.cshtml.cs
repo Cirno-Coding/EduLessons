@@ -3,16 +3,21 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SchoolHub.Data;
 using SchoolHub.Models;
+using SchoolHub.Services;
 
 namespace SchoolHub.Pages
 {
     public class ProjectsModel : PageModel
     {
-        private readonly AppDbContext _context;
+        private readonly IProjectService _projectService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public ProjectsModel(AppDbContext context)
+        public ProjectsModel(
+            IProjectService projectService,
+            ICurrentUserService currentUserService)
         {
-            _context = context;
+            _projectService = projectService;
+            _currentUserService = currentUserService;
         }
 
         [BindProperty]
@@ -23,6 +28,8 @@ namespace SchoolHub.Pages
 
         [BindProperty]
         public string Category { get; set; } = string.Empty;
+        [BindProperty]
+        public string Status { get; set; } = "Идея";
 
         public List<Project> Projects { get; set; } = new();
 
@@ -41,22 +48,21 @@ namespace SchoolHub.Pages
             "Другое"
         };
 
-        public IActionResult OnGet()
+        public List<string> Statuses { get; } = new()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
+            "Идея",
+            "В разработке",
+            "Завершён"
+        };
 
-            if (userId == null)
-            {
-                return RedirectToPage("/Index");
-            }
-
-            LoadProjects(userId.Value);
-            return Page();
+        public void OnGet()
+        {
+            LoadProjects();
         }
 
         public IActionResult OnPostAdd()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
+            var userId = _currentUserService.GetCurrentUserId(HttpContext);
 
             if (userId == null)
             {
@@ -65,10 +71,11 @@ namespace SchoolHub.Pages
 
             if (string.IsNullOrWhiteSpace(Title) ||
                 string.IsNullOrWhiteSpace(Description) ||
-                string.IsNullOrWhiteSpace(Category))
+                string.IsNullOrWhiteSpace(Category) ||
+                string.IsNullOrWhiteSpace(Status))
             {
                 Message = "Заполните все поля.";
-                LoadProjects(userId.Value);
+                LoadProjects();
                 return Page();
             }
 
@@ -77,31 +84,19 @@ namespace SchoolHub.Pages
                 Title = Title,
                 Description = Description,
                 Category = Category,
+                Status = Status,
                 CreatedAt = DateTime.Now,
                 AuthorId = userId.Value
             };
 
-            _context.Projects.Add(project);
-            _context.SaveChanges();
+            _projectService.AddProject(project);
 
             return RedirectToPage();
         }
 
-        private void LoadProjects(int userId)
+        private void LoadProjects()
         {
-            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
-
-            if (user != null)
-            {
-                CurrentUserName = user.Name;
-            }
-
-            Projects = _context.Projects
-                .Include(p => p.Author)
-                .Where(p => p.AuthorId == userId)
-                .OrderByDescending(p => p.CreatedAt)
-                .OrderByDescending(p => p.Id)
-                .ToList();
+            Projects = _projectService.GetAllProjects();
             TotalProjectsCount = Projects.Count;
         }
     }

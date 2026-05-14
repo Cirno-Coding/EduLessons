@@ -1,0 +1,79 @@
+﻿@model List<SchoolHub.Models.Project>
+
+@{
+    ViewData["Title"] = "MVC Админка проектов";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">MVC Админка проектов</h1>
+            <p class="text-muted mb-0">
+                Эта страница сделана через Controller и View, а не через Razor Page.
+            </p>
+        </div>
+
+        <span class="badge bg-dark fs-6">
+            Всего проектов: @Model.Count
+        </span>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Проектов пока нет.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Статус</th>
+                    <th>Автор</th>
+                    <th>Дата</th>
+                    <th style="width: 260px;">Действия</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var project in Model)
+                {
+                    <tr>
+                        <td>@project.Title</td>
+                        <td>@project.Category</td>
+                        <td>@project.Status</td>
+                        <td>@project.Author?.Name</td>
+                        <td>@project.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a asp-controller="AdminProjects"
+                                   asp-action="Details"
+                                   asp-route-id="@project.Id"
+                                   class="btn btn-outline-primary btn-sm">
+                                    Подробнее
+                                </a>
+
+                                <a asp-controller="AdminProjects"
+                                   asp-action="Edit"
+                                   asp-route-id="@project.Id"
+                                   class="btn btn-warning btn-sm">
+                                    Редактировать
+                                </a>
+
+                                <a asp-controller="AdminProjects"
+                                   asp-action="Delete"
+                                   asp-route-id="@project.Id"
+                                   class="btn btn-danger btn-sm">
+                                    Удалить
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

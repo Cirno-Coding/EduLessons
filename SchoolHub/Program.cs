@@ -1,10 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolHub.Data;
+using SchoolHub.Middleware;
+using SchoolHub.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddControllers();
 
 // Подключение SQLite
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -18,6 +23,10 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
 
 var app = builder.Build();
 
@@ -28,17 +37,22 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseSession();
+app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<AuthRedirectMiddleware>();
 
-app.UseAuthorization();
-
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllers();
+app.MapRazorPages();
 
 app.Run();

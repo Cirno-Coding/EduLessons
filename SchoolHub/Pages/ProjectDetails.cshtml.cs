@@ -3,16 +3,17 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SchoolHub.Data;
 using SchoolHub.Models;
+using SchoolHub.Services;
 
 namespace SchoolHub.Pages
 {
     public class ProjectDetailsModel : PageModel
     {
-        private readonly AppDbContext _context;
+        private readonly IProjectService _projectService;
 
-        public ProjectDetailsModel(AppDbContext context)
+        public ProjectDetailsModel(IProjectService projectService)
         {
-            _context = context;
+            _projectService = projectService;
         }
 
         // Здесь будет храниться один проект
@@ -20,12 +21,8 @@ namespace SchoolHub.Pages
 
         public IActionResult OnGet(int id)
         {
-            // Ищем проект по id и сразу загружаем автора
-            ProjectItem = _context.Projects
-                .Include(p => p.Author)
-                .FirstOrDefault(p => p.Id == id);
+            ProjectItem = _projectService.GetProjectById(id);
 
-            // Если проекта нет, отправляем на общую страницу проектов
             if (ProjectItem == null)
             {
                 return RedirectToPage("/Projects");

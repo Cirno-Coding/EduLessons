@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SchoolHub.Data;
 using SchoolHub.Models;
+using SchoolHub.Services;
 
 namespace SchoolHub.Pages
 {
@@ -11,11 +12,21 @@ namespace SchoolHub.Pages
         private readonly AppDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher;
 
-        public IndexModel(AppDbContext context)
+        // ===============================
+        // ЧТО МЫ ДОБАВИЛИ:
+        // Внедрили сервис текущего пользователя через DI
+        // ===============================
+        private readonly ICurrentUserService _currentUserService;
+
+        public IndexModel(
+            AppDbContext context,
+            ICurrentUserService currentUserService)
         {
             _context = context;
             _passwordHasher = new PasswordHasher<User>();
+            _currentUserService = currentUserService;
         }
+
 
         // ---------------------------
         // Поля для регистрации
@@ -113,7 +124,7 @@ namespace SchoolHub.Pages
             _context.SaveChanges();
 
             // Сохраняем вход в session
-            HttpContext.Session.SetInt32("UserId", user.Id);
+            _currentUserService.SignIn(HttpContext, user.Id);
 
             return RedirectToPage();
         }
@@ -149,33 +160,24 @@ namespace SchoolHub.Pages
                 return Page();
             }
 
-            HttpContext.Session.SetInt32("UserId", user.Id);
+            _currentUserService.SignIn(HttpContext, user.Id);
 
             return RedirectToPage();
         }
 
         public IActionResult OnPostLogout()
         {
-            HttpContext.Session.Clear();
+            _currentUserService.SignOut(HttpContext);
             return RedirectToPage();
         }
 
         private void LoadCurrentUser()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-
-            if (userId == null)
-            {
-                IsAuthorized = false;
-                return;
-            }
-
-            var user = _context.Users.FirstOrDefault(u => u.Id == userId.Value);
+            var user = _currentUserService.GetCurrentUser(HttpContext);
 
             if (user == null)
             {
                 IsAuthorized = false;
-                HttpContext.Session.Clear();
                 return;
             }
 

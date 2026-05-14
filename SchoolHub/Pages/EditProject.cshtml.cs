@@ -1,16 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SchoolHub.Data;
+using SchoolHub.Services;
 
 namespace SchoolHub.Pages
 {
     public class EditProjectModel : PageModel
     {
-        private readonly AppDbContext _context;
+        private readonly IProjectService _projectService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public EditProjectModel(AppDbContext context)
+        public EditProjectModel(
+            IProjectService projectService,
+            ICurrentUserService currentUserService)
         {
-            _context = context;
+            _projectService = projectService;
+            _currentUserService = currentUserService;
         }
 
         [BindProperty]
@@ -24,6 +29,8 @@ namespace SchoolHub.Pages
 
         [BindProperty]
         public string Category { get; set; } = string.Empty;
+        [BindProperty]
+        public string Status { get; set; } = string.Empty;
 
         public string Message { get; set; } = string.Empty;
 
@@ -38,43 +45,51 @@ namespace SchoolHub.Pages
             "Дизайн",
             "Другое"
         };
+        public List<string> Statuses { get; } = new()
+        {
+            "Идея",
+            "В разработке",
+            "Завершён"
+        };
 
         public IActionResult OnGet(int id)
         {
-            // Проверяем, вошёл ли пользователь
-            var userId = HttpContext.Session.GetInt32("UserId");
+            var userId = _currentUserService.GetCurrentUserId(HttpContext);
 
             if (userId == null)
             {
                 return RedirectToPage("/Index");
             }
 
-            // Ищем проект
-            var project = _context.Projects.FirstOrDefault(p => p.Id == id);
+            var project = _projectService.GetProjectById(id);
 
             if (project == null)
             {
                 return RedirectToPage("/MyProjects");
             }
 
-            // Проверяем, что это проект текущего пользователя
             if (project.AuthorId != userId.Value)
             {
                 return RedirectToPage("/Projects");
             }
 
-            // Заполняем форму текущими значениями
+            if (project.Status == "Завершён")
+            {
+                return RedirectToPage("/MyProjects");
+            }
+
             Id = project.Id;
             Title = project.Title;
             Description = project.Description;
             Category = project.Category;
+            Status = project.Status;
 
             return Page();
         }
 
         public IActionResult OnPost()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
+            var userId = _currentUserService.GetCurrentUserId(HttpContext);
 
             if (userId == null)
             {
@@ -83,32 +98,36 @@ namespace SchoolHub.Pages
 
             if (string.IsNullOrWhiteSpace(Title) ||
                 string.IsNullOrWhiteSpace(Description) ||
-                string.IsNullOrWhiteSpace(Category))
+                string.IsNullOrWhiteSpace(Category) ||
+                string.IsNullOrWhiteSpace(Status))
             {
                 Message = "Заполните все поля.";
                 return Page();
             }
 
-            // Снова ищем проект в базе
-            var project = _context.Projects.FirstOrDefault(p => p.Id == Id);
+            var project = _projectService.GetProjectById(Id);
 
             if (project == null)
             {
                 return RedirectToPage("/MyProjects");
             }
 
-            // Снова проверяем владельца
             if (project.AuthorId != userId.Value)
             {
                 return RedirectToPage("/Projects");
             }
 
-            // Обновляем данные
+            if (project.Status == "Завершён")
+            {
+                return RedirectToPage("/MyProjects");
+            }
+
             project.Title = Title;
             project.Description = Description;
             project.Category = Category;
+            project.Status = Status;
 
-            _context.SaveChanges();
+            _projectService.UpdateProject(project);
 
             return RedirectToPage("/MyProjects");
         }

@@ -3,16 +3,21 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SchoolHub.Data;
 using SchoolHub.Models;
+using SchoolHub.Services;
 
 namespace SchoolHub.Pages
 {
     public class MyProjectsModel : PageModel
     {
-        private readonly AppDbContext _context;
+        private readonly IProjectService _projectService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public MyProjectsModel(AppDbContext context)
+        public MyProjectsModel(
+            IProjectService projectService,
+            ICurrentUserService currentUserService)
         {
-            _context = context;
+            _projectService = projectService;
+            _currentUserService = currentUserService;
         }
 
         public List<Project> Projects { get; set; } = new();
@@ -23,27 +28,27 @@ namespace SchoolHub.Pages
 
         public IActionResult OnGet()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
+            var user = _currentUserService.GetCurrentUser(HttpContext);
 
-            if (userId == null)
+            if (user == null)
             {
                 return RedirectToPage("/Index");
             }
 
-            LoadMyProjects(userId.Value);
+            LoadMyProjects(user.Id, user.Name);
             return Page();
         }
 
         public IActionResult OnPostDelete(int id)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
+            var userId = _currentUserService.GetCurrentUserId(HttpContext);
 
             if (userId == null)
             {
                 return RedirectToPage("/Index");
             }
 
-            var project = _context.Projects.FirstOrDefault(p => p.Id == id);
+            var project = _projectService.GetProjectById(id);
 
             if (project == null)
             {
@@ -55,28 +60,15 @@ namespace SchoolHub.Pages
                 return RedirectToPage();
             }
 
-            _context.Projects.Remove(project);
-            _context.SaveChanges();
+            _projectService.DeleteProject(project);
 
             return RedirectToPage();
         }
 
-        private void LoadMyProjects(int userId)
+        private void LoadMyProjects(int userId, string userName)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
-
-            if (user != null)
-            {
-                CurrentUserName = user.Name;
-            }
-
-            Projects = _context.Projects
-                .Include(p => p.Author)
-                .Where(p => p.AuthorId == userId)
-                .OrderByDescending(p => p.CreatedAt)
-                .ThenByDescending(p => p.Id)
-                .ToList();
-
+            CurrentUserName = userName;
+            Projects = _projectService.GetProjectsByAuthorId(userId);
             MyProjectsCount = Projects.Count;
         }
     }
